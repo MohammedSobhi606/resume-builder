@@ -1,71 +1,52 @@
-import JobFilterSidebar from "@/components/JobFilterSidebar";
-import JobResults from "@/components/JobResults";
-import H1 from "@/components/ui/h1";
-import { jobFilterSchema, JobFilterValues } from "@/lib/validation";
-import { Metadata } from "next";
+import logo from "@/public/logo.svg";
+import resumePreview from "@/public/cv.jpg";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowBigRight } from "lucide-react";
 
-// interface for searchParams
-interface IPageProps {
-  // should be same as this spicial prop
-  searchParams: {
-    q?: string;
-    location?: string;
-    type?: string;
-    remote?: string; // as any search parameters is string
-    page?: string; // for pagination
-  };
-}
-// metadata
-function getTitle({ q, type, location, remote }: JobFilterValues) {
-  const titlePrefix = q
-    ? `${q} jobs`
-    : type
-    ? `${type} developer jobs`
-    : remote
-    ? "Remote developer jobs"
-    : "All developer jobs";
-
-  const titleSuffix = location ? ` in ${location}` : "";
-
-  return `${titlePrefix}${titleSuffix}`;
-}
-
-export function generateMetadata({
-  searchParams: { q, type, location, remote },
-}: IPageProps): Metadata {
-  return {
-    title: `${getTitle({
-      q,
-      type,
-      location,
-      remote: remote === "true",
-    })} | portal jobs`,
-  };
-}
-export default async function Home({
-  searchParams: { q, location, type, remote, page },
-}: IPageProps) {
-  const filterValues: JobFilterValues = await {
-    q,
-    location,
-    type,
-    remote: remote === "true", // if remote is true then convert it to true
-  }; // to transform remote to boolean
+export default function Home() {
   return (
-    <main className="m-auto my-10 max-w-5xl space-y-10 px-3">
-      <div className="space-y-5 text-center">
-        <H1>{getTitle(filterValues)}</H1>
-        <p className="text-muted-foreground">Find your dream job.</p>
-      </div>
-      <section className="flex-col flex md:flex-row gap-4">
-        {/* job filter sidebar */}
-        <JobFilterSidebar defautlvalues={filterValues} />
-
-        <JobResults
-          filterValues={filterValues}
-          page={page ? parseInt(page) : undefined}
+    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gray-100 px-5 py-12 text-center text-gray-900 md:flex-row md:text-start lg:gap-12 dark:bg-background">
+      <div className="max-w-prose space-y-3">
+        <Image
+          src={logo}
+          alt="Logo"
+          width={150}
+          height={150}
+          className="mx-auto md:ms-0"
         />
-      </section>
+        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-accent-foreground">
+          Create the{" "}
+          <span className="inline-block bg-gradient-to-r from-fuchsia-600 to-fuchsia-400 bg-clip-text text-transparent">
+            Perfect Resume
+          </span>{" "}
+          in Minutes
+        </h1>
+        <p className="text-lg text-accent-foreground">
+          Our <span className="font-bold">AI resume builder</span> helps you
+          design a professional resume, even if you&apos;re not very smart.
+        </p>
+        <Button
+          asChild
+          size="lg"
+          className="bg-purple-600 hover:bg-purple-700  text-white"
+        >
+          <span>
+            {" "}
+            <Link href="/resumes">Get started</Link>
+            <ArrowBigRight />
+          </span>
+        </Button>
+      </div>
+      <div>
+        <Image
+          src={resumePreview}
+          alt="Resume preview"
+          width={600}
+          className="shadow-md lg:rotate-[1.5deg]"
+        />
+      </div>
     </main>
   );
 }

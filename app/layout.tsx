@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Roboto_Condensed } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { ClerkProvider } from "@clerk/nextjs";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const roboto = Roboto_Condensed({
   subsets: ["latin"],
@@ -10,10 +11,10 @@ const roboto = Roboto_Condensed({
 
 export const metadata: Metadata = {
   title: {
-    default: "Jop Portal",
-    template: "%s | Jop Portal",
+    default: "AI Resume Builder",
+    template: "%s | AI Resume Builder",
   },
-  description: "find your dream job",
+  description: "make your dream resume",
 };
 
 export default function RootLayout({
@@ -22,12 +23,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${roboto.className} min-w-[350px]`}>
-        <Navbar />
-        {children}
-        <Footer />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${roboto.className}`}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

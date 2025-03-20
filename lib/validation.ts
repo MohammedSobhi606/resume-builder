@@ -1,73 +1,99 @@
 import { z } from "zod";
-import { jobTypes, locationTypes } from "./jobTypes";
 
-const requiredString = z.string().min(1, "Required");
-const numericRequiredString = requiredString.regex(/^\d+$/, "Must be a number");
+export const optionalString = z.string().trim().optional().or(z.literal(""));
 
-const companyLogoSchema = z
-  .custom<File | undefined>()
-
-  .refine(
-    (file) => !file || (file instanceof File && file.type.startsWith("image/")),
-    "Must be an image file"
-  )
-  .optional()
-  .refine((file) => {
-    return !file || file.size < 1024 * 1024 * 2;
-  }, "File must be less than 2MB");
-
-const applicationSchema = z
-  .object({
-    applicationEmail: z.string().max(100).email().optional().or(z.literal("")),
-    applicationUrl: z.string().max(100).url().optional().or(z.literal("")),
-  })
-  .refine((data) => data.applicationEmail || data.applicationUrl, {
-    message: "Email or url is required",
-    path: ["applicationEmail"],
-  });
-
-const locationSchema = z
-  .object({
-    locationType: requiredString.refine(
-      (value) => locationTypes.includes(value),
-      "Invalid location type"
-    ),
-    location: z.string().max(100).optional(),
-  })
-  .refine(
-    (data) =>
-      !data.locationType || data.locationType === "Remote" || data.location,
-    {
-      message: "Location is required for on-site jobs",
-      path: ["location"],
-    }
-  );
-
-export const createJobSchema = z
-  .object({
-    title: requiredString.max(100),
-    type: requiredString.refine(
-      (value) => jobTypes.includes(value),
-      "Invalid job type"
-    ),
-    companyName: requiredString.max(100),
-    companyLogo: companyLogoSchema,
-    description: z.string().max(5000).optional(),
-    salary: numericRequiredString.max(
-      9,
-      "Number can't be longer than 9 digits"
-    ),
-  })
-  .and(applicationSchema)
-  .and(locationSchema);
-
-export type CreateJobValues = z.infer<typeof createJobSchema>;
-export const jobFilterSchema = z.object({
-  q: z.string().optional(),
-  type: z.string().optional(),
-  location: z.string().optional(),
-  remote: z.coerce.boolean().optional(), // should transform to boolean cause the form change every input to string
+export const generalInfoSchema = z.object({
+  title: optionalString,
+  description: optionalString,
 });
-// export jobFilterSchema as types
 
-export type JobFilterValues = z.infer<typeof jobFilterSchema>;
+export type GeneralInfoValues = z.infer<typeof generalInfoSchema>;
+// personal information
+
+export const personalInfoSchema = z.object({
+  photo: z
+    .custom<File | undefined>()
+    .refine(
+      (file) =>
+        !file || (file instanceof File && file.type.startsWith("image/")),
+      "Must be an image file"
+    )
+    .refine(
+      (file) => !file || file.size <= 1024 * 1024 * 4,
+      "File must be less then 4MB"
+    ),
+  firstName: optionalString,
+  lastName: optionalString,
+  jobTitle: optionalString,
+  city: optionalString,
+  country: optionalString,
+  phone: optionalString,
+  email: optionalString,
+});
+
+export type PersonalInfoValues = z.infer<typeof personalInfoSchema>;
+export const workExperienceSchema = z.object({
+  workExperiences: z
+    .array(
+      // array of objects containing information for multiple work experience fields
+      z.object({
+        position: optionalString,
+        company: optionalString,
+        startDate: optionalString,
+        endDate: optionalString,
+        description: optionalString,
+      })
+    )
+    .optional(),
+});
+
+export type WorkExperienceValues = z.infer<typeof workExperienceSchema>;
+export const educationSchema = z.object({
+  educations: z
+    .array(
+      z.object({
+        degree: optionalString,
+        school: optionalString,
+        startDate: optionalString,
+        endDate: optionalString,
+      })
+    )
+    .optional(),
+});
+
+export type EducationValues = z.infer<typeof educationSchema>;
+
+export const skillsSchema = z.object({
+  skills: z.array(z.string().trim()).optional(),
+});
+
+export type SkillsValues = z.infer<typeof skillsSchema>;
+
+export const summarySchema = z.object({
+  summary: optionalString,
+});
+
+export type SummaryValues = z.infer<typeof summarySchema>;
+
+// make a big schema object to validate all feild by combining
+// personal info with generall info
+
+// export const resumeSchema = z.object({
+//   generalInfo: generalInfoSchema,
+//   personalInfo: personalInfoSchema,
+// });
+export const resumeSchema = z.object({
+  ...generalInfoSchema.shape,
+  ...personalInfoSchema.shape,
+  ...workExperienceSchema.shape,
+  ...educationSchema.shape,
+  ...skillsSchema.shape,
+  ...summarySchema.shape,
+  colorHex: optionalString,
+  borderStyle: optionalString,
+});
+// Omit=>Construct a type with the properties of T <except> for those in type K
+export type ResumeValues = Omit<z.infer<typeof resumeSchema>, "photo"> & {
+  id?: string;
+  photo?: File | string | null;
+};

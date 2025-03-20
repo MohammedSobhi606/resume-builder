@@ -1,0 +1,85 @@
+"use client";
+import React, { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { steps } from "./steps";
+import Breadcrumbs from "./Breadcrumbs";
+import Footer from "./Footer";
+import { ResumeValues } from "@/lib/validation";
+import ResumePreviewSection from "./ResumePreviewSection";
+import { cn, mapToResumeValues } from "@/lib/utils";
+import useUnloadWarning from "@/hooks/useUnloadWarning";
+import useAutoSaveResume from "./useAutoSaveResume";
+import { ResumeServerData } from "@/lib/types";
+
+interface ResumeEditorProps {
+  resumeToEdit: ResumeServerData | null;
+}
+
+function ResumeEditor({ resumeToEdit }: ResumeEditorProps) {
+  // state to store resume data
+  const [resumeData, setResumeData] = useState<ResumeValues>(
+    resumeToEdit ? mapToResumeValues(resumeToEdit) : {}
+  );
+  const searchParams = useSearchParams(); //access search params in client component
+  const currentStep = searchParams.get("step") || steps[0].key; //get current step else use the first step in the steps array
+  const [showSmResumePreview, setShowSmResumePreview] = useState(false); // show | hide the sm resume preview
+
+  const { isSaving, hasUnsavedChanges } = useAutoSaveResume(resumeData); // save resume data
+
+  useUnloadWarning(hasUnsavedChanges); //prevents loading of unsaved changes
+  function setStep(key: string) {
+    const newSearchParams = new URLSearchParams(searchParams); // you should take acopy from it to deal with search params
+    newSearchParams.set("step", key);
+    window.history.pushState(null, "", `?${newSearchParams.toString()}`); // why not use router.push hook ...because it will make some load before change the search params
+  }
+  const FormComponent = steps.find(
+    // find the component which match the search params step
+    (step) => step.key === currentStep
+  )?.component;
+
+  return (
+    <div>
+      <div className="flex grow flex-col">
+        <header className="space-y-1.5 border-b px-3 py-5 text-center">
+          <h1 className="text-2xl font-bold">Design your resume</h1>
+          <p className="text-sm text-muted-foreground">
+            Follow the steps below to create your resume. Your progress will be
+            saved automatically.
+          </p>
+        </header>
+        <main className="relative grow  ">
+          <div className=" top-0 bottom-0 flex w-full">
+            <div
+              className={`w-full md:w-1/2 p-3 overflow-y-auto space-y-6 ${
+                showSmResumePreview && "hidden"
+              }`}
+            >
+              <Breadcrumbs currentStep={currentStep} setCurrentStep={setStep} />
+              {FormComponent && (
+                <FormComponent
+                  resumeData={resumeData}
+                  setResumeData={setResumeData}
+                />
+              )}
+            </div>
+            <div className="grow md:border-r" />
+            <ResumePreviewSection
+              resumeData={resumeData}
+              setResumeData={setResumeData}
+              className={cn(showSmResumePreview && "flex")}
+            />
+          </div>
+        </main>
+        <Footer
+          currentStep={currentStep}
+          setCurrentStep={setStep}
+          setShowSmResumePreview={setShowSmResumePreview}
+          showSmResumePreview={showSmResumePreview}
+          isSaving={isSaving}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default ResumeEditor;
