@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-
 import useDebounce from "@/hooks/useDebounce";
 import { ResumeValues } from "@/lib/validation";
 import { useSearchParams } from "next/navigation";
@@ -88,7 +86,6 @@ export default function useAutoSaveResume(resumeData: ResumeValues) {
     isError,
     resumeId,
     searchParams,
-    toast,
   ]);
 
   return {

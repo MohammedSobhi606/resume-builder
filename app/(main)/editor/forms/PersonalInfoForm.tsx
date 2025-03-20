@@ -2,16 +2,10 @@
 import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  generalInfoSchema,
-  GeneralInfoValues,
-  personalInfoSchema,
-  PersonalInfoValues,
-} from "@/lib/validation";
+import { personalInfoSchema, PersonalInfoValues } from "@/lib/validation";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,

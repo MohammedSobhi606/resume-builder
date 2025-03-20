@@ -99,6 +99,7 @@ function FormLabel({
       data-error={!!error}
       htmlFor={formItemId}
       {...props}
+      className={className}
     />
   );
 }

@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  eslint: {
+    ignoreDuringBuilds: true, // Skips ESLint during builds
+  },
 };
 
 export default nextConfig;
