@@ -1,5 +1,5 @@
 # Resume Builder App using next js 15
-
+# Deployment : https://resume-builder-brown-three.vercel.app/
 ## tools
 
 - typscript =>type safty.
